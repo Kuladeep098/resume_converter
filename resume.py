@@ -2,7 +2,7 @@ from docxtpl import DocxTemplate
 
 def generate_resume(data):
 
-    doc = DocxTemplate("sample_template.docx")
+    doc = DocxTemplate("template.docx")
 
     context = {
         "name": data["name"],

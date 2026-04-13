@@ -4,8 +4,7 @@ from docxtpl import DocxTemplate
 from openai import OpenAI
 from io import BytesIO
 
-client = OpenAI(api_key=st.secrets["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"])
-
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 st.title("AI Resume → Template Converter")
 
 uploaded_file = st.file_uploader("Upload Resume", type=["pdf"])

@@ -7,14 +7,15 @@ from io import BytesIO
 # Configure Gemini API
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
-# Use a supported model
-model = genai.GenerativeModel("gemini-1.5-flash")
+# Correct Gemini model
+model = genai.GenerativeModel("models/gemini-1.5-flash")
 
 st.title("AI Resume → Template Converter")
 
 uploaded_file = st.file_uploader("Upload Resume", type=["pdf"])
 
 
+# Extract text from PDF
 def extract_text(file):
     text = ""
     with pdfplumber.open(file) as pdf:
@@ -25,25 +26,26 @@ def extract_text(file):
     return text
 
 
+# Convert resume using Gemini
 def convert_resume(text):
 
-    # limit text size to avoid API errors
+    # limit size to avoid API errors
     text = text[:6000]
 
     prompt = f"""
-Convert the following resume into this structure:
+Extract and rewrite the following resume into this structured format.
 
-Name
-Title
-Location
-Contact
-Professional Summary
-Key Achievements
-Technical Skills
-Professional Experience
-Education
+Name:
+Title:
+Location:
+Contact:
+Professional Summary:
+Key Achievements:
+Technical Skills:
+Professional Experience:
+Education:
 
-Resume:
+Resume text:
 {text}
 """
 
@@ -60,22 +62,29 @@ if uploaded_file:
 
     if st.button("Convert Resume"):
 
-        result = convert_resume(text)
+        try:
 
-        doc = DocxTemplate("template.docx")
+            result = convert_resume(text)
 
-        doc.render({
-            "content": result
-        })
+            doc = DocxTemplate("template.docx")
 
-        buffer = BytesIO()
+            doc.render({
+                "content": result
+            })
 
-        doc.save(buffer)
+            buffer = BytesIO()
 
-        buffer.seek(0)
+            doc.save(buffer)
 
-        st.download_button(
-            "Download Converted Resume",
-            buffer,
-            file_name="converted_resume.docx"
-        )
+            buffer.seek(0)
+
+            st.download_button(
+                "Download Converted Resume",
+                buffer,
+                file_name="converted_resume.docx",
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            )
+
+        except Exception as e:
+            st.error("Error converting resume")
+            st.write(e)

@@ -1,6 +1,6 @@
 import streamlit as st
-from resume_parser import parse_resume
-from generate_resume import generate_resume
+from parser import parse_resume
+from resume import generate_resume
 
 st.title("Resume → Standard Template Converter")
 

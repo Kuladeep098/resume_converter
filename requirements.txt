@@ -2,4 +2,4 @@ streamlit
 pdfplumber
 docxtpl
 python-docx
-openai
+google-generativeai

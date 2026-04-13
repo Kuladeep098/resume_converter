@@ -4,7 +4,7 @@ from docxtpl import DocxTemplate
 from openai import OpenAI
 from io import BytesIO
 
-client = OpenAI(api_key="AIzaSyCP7b7_fe2LsNMfPwbYo6wN9z8fdTGfNYo")
+client = OpenAI(api_key=st.secrets["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"])
 
 st.title("AI Resume → Template Converter")
 

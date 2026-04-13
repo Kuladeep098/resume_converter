@@ -1,25 +1,78 @@
 import streamlit as st
-from parser import parse_resume
-from resume import generate_resume
+import pdfplumber
+from docxtpl import DocxTemplate
+from openai import OpenAI
+from io import BytesIO
 
-st.title("Resume → Standard Template Converter")
+client = OpenAI(api_key="YOUR_API_KEY")
 
-file = st.file_uploader("Upload Resume", type=["pdf","docx"])
+st.title("AI Resume → Template Converter")
 
-if file:
+uploaded_file = st.file_uploader("Upload Resume", type=["pdf"])
 
-    data = parse_resume(file)
 
-    st.write("Extracted Data")
-    st.json(data)
+def extract_text(file):
 
-    if st.button("Generate Resume"):
+    text = ""
 
-        generate_resume(data)
+    with pdfplumber.open(file) as pdf:
+        for page in pdf.pages:
+            text += page.extract_text() + "\n"
 
-        with open("converted_resume.docx","rb") as f:
-            st.download_button(
-                "Download Converted Resume",
-                f,
-                file_name="standard_resume.docx"
-            )
+    return text
+
+
+def convert_resume(text):
+
+    prompt = f"""
+Convert the following resume into this structure:
+
+Name
+Title
+Location
+Contact
+Professional Summary
+Key Achievements
+Technical Skills
+Professional Experience
+Education
+
+Resume:
+{text}
+"""
+
+    response = client.chat.completions.create(
+        model="gpt-4.1",
+        messages=[{"role":"user","content":prompt}]
+    )
+
+    return response.choices[0].message.content
+
+
+if uploaded_file:
+
+    text = extract_text(uploaded_file)
+
+    st.success("Resume uploaded successfully!")
+
+    if st.button("Convert Resume"):
+
+        result = convert_resume(text)
+
+        doc = DocxTemplate("template.docx")
+
+        doc.render({
+            "content": result
+        })
+
+        buffer = BytesIO()
+
+        doc.save(buffer)
+
+        buffer.seek(0)
+
+        st.download_button(
+            "Download Converted Resume",
+            buffer,
+            file_name="converted_resume.docx"
+        )

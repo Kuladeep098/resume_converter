@@ -7,7 +7,7 @@ from io import BytesIO
 # Configure Gemini API
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
-model = genai.GenerativeModel("gemini-1.5-flash-latest")
+model = genai.GenerativeModel("gemini-pro")
 
 st.title("AI Resume → Template Converter")
 

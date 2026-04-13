@@ -1,23 +1,24 @@
 import streamlit as st
 import pdfplumber
 from docxtpl import DocxTemplate
-from openai import OpenAI
+import google.generativeai as genai
 from io import BytesIO
 
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+# Configure Gemini API
+genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+
+model = genai.GenerativeModel("gemini-1.5-flash")
+
 st.title("AI Resume → Template Converter")
 
 uploaded_file = st.file_uploader("Upload Resume", type=["pdf"])
 
 
 def extract_text(file):
-
     text = ""
-
     with pdfplumber.open(file) as pdf:
         for page in pdf.pages:
             text += page.extract_text() + "\n"
-
     return text
 
 
@@ -40,12 +41,9 @@ Resume:
 {text}
 """
 
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{"role":"user","content":prompt}]
-    )
+    response = model.generate_content(prompt)
 
-    return response.choices[0].message.content
+    return response.text
 
 
 if uploaded_file:

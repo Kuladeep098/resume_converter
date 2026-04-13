@@ -7,7 +7,8 @@ from io import BytesIO
 # Configure Gemini API
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
-model = genai.GenerativeModel("gemini-pro")
+# Use a supported model
+model = genai.GenerativeModel("gemini-1.5-flash")
 
 st.title("AI Resume → Template Converter")
 
@@ -18,11 +19,16 @@ def extract_text(file):
     text = ""
     with pdfplumber.open(file) as pdf:
         for page in pdf.pages:
-            text += page.extract_text() + "\n"
+            page_text = page.extract_text()
+            if page_text:
+                text += page_text + "\n"
     return text
 
 
 def convert_resume(text):
+
+    # limit text size to avoid API errors
+    text = text[:6000]
 
     prompt = f"""
 Convert the following resume into this structure:

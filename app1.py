@@ -3,7 +3,7 @@ import pdfplumber
 from docxtpl import DocxTemplate
 from openai import OpenAI
 from io import BytesIO
-
+st.write("Key loaded:", bool(st.secrets.get("OPENAI_API_KEY")))
 # Configure OpenAI
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 

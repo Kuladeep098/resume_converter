@@ -1,18 +1,20 @@
 import streamlit as st
 import pdfplumber
 from docxtpl import DocxTemplate
-from openai import OpenAI
+import google.generativeai as genai
 from io import BytesIO
-st.write("Key loaded:", bool(st.secrets.get("OPENAI_API_KEY")))
-# Configure OpenAI
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+
+# Load Gemini API key
+genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+
+# Recommended Gemini model
+model = genai.GenerativeModel("gemini-1.5-flash")
 
 st.title("AI Resume → Template Converter")
 
 uploaded_file = st.file_uploader("Upload Resume", type=["pdf"])
 
 
-# Extract text from PDF
 def extract_text(file):
     text = ""
     with pdfplumber.open(file) as pdf:
@@ -23,13 +25,12 @@ def extract_text(file):
     return text
 
 
-# Convert resume using OpenAI
 def convert_resume(text):
 
     text = text[:6000]
 
     prompt = f"""
-Extract and rewrite the following resume into this structured format.
+Convert this resume into the following structured format.
 
 Name:
 Title:
@@ -45,14 +46,9 @@ Resume text:
 {text}
 """
 
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "user", "content": prompt}
-        ]
-    )
+    response = model.generate_content(prompt)
 
-    return response.choices[0].message.content
+    return response.text
 
 
 if uploaded_file:
@@ -64,19 +60,15 @@ if uploaded_file:
     if st.button("Convert Resume"):
 
         try:
-
             result = convert_resume(text)
 
             doc = DocxTemplate("template.docx")
 
-            doc.render({
-                "content": result
-            })
+            doc.render({"content": result})
 
             buffer = BytesIO()
 
             doc.save(buffer)
-
             buffer.seek(0)
 
             st.download_button(
